@@ -25,3 +25,12 @@ Having set the data on Mode Analytics and cleaning it, I then did an initial Exp
 ## Data Analysis
 
 Each of the hypotheses were then validated, and along with it some of the initial questions that I raised during EDA were also answered. The medal winning trend on a sport, gender and seasonal level was taken and my understanding of the data was more refined. A presentation on the entire workflow of the project is found [here](https://github.com/suriyaram38/SportsStats-120-years-Olympic-Datasets-Analysis/blob/4b2dbf8cabd78b55d430e0ec2404de4a2faa8e3a/Final%20Presentation-%20SportsStats%20Dataset%20Analytics.pdf) and all the queries for each of the scenarios can be found [here](https://github.com/suriyaram38/SportsStats-120-years-Olympic-Datasets-Analysis/blob/1308a44e939e77cb2eec17ded6d97fd18a091e32/SQL%20Syntax-%20Data%20Analysis)
+
+## Further work that can be done 
+
+There are a lot of other relationships left to explore. For example, looking at the top 10 sports of the countries, they have something to do with the popularity and cultural significance in the country. We can also do a historical analysis and the journey of a specific country, looking at their star athletes’ performances, explore some interesting incidents and stats, etc.
+
+## The Conclusion
+
+The dataset offers limitless possibilities for analysis for sports buffs, healthcare professionals and people interested in trivia and history. I was able to do a detailed trend analysis for United States, Great Britain, France and Germany. The US won most medals because they sent most participants. Majority of the medals are concentrated in a select
+few sports. There is an up-down trajectory in the medals won across history curve because of difference in seasonal games and participation. Irrespective of sex, most of the sports that contribute to top medal winning counts are similar.
