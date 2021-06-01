@@ -1,0 +1,182 @@
+-- Cleaning the NOC regions dataset
+
+SELECT noc, region,
+(CASE WHEN notes IS NULL THEN 'NA' ELSE notes END) AS notes_cleaned
+FROM  suriyaram38.noc_regions
+LIMIT 100
+
+-- Doing an exploratory Data Analysis on the trend of Medals won by the top 5 countries across 120 years
+
+SELECT games, medal, COUNT(*) AS medal_count, team
+FROM suriyaram38.athlete_events
+WHERE (team='United States' OR  team='Germany' OR team='France' 
+OR team='Great Britain') AND medal <> 'NA'
+GROUP BY games, medal, team
+ORDER BY medal_count DESC
+
+-- Number of medals won on a gender wise level for the top 4 countries
+
+SELECT COUNT(*), sex, team
+FROM suriyaram38.athlete_events
+WHERE (team='United States' OR  team='Germany' OR team='France' 
+OR team='Great Britain') AND medal <> 'NA'
+GROUP BY sex, team
+ORDER BY COUNT(*) DESC
+LIMIT 100
+
+-- The number of medals arranged in the decreasing order of sports they were part of
+
+SELECT COUNT(*), sport
+FROM suriyaram38.athlete_events
+WHERE medal<> 'NA' AND team='Germany'
+GROUP BY sport
+ORDER BY COUNT(*) DESC
+LIMIT 100
+
+-- HYPOTHESIS 1- looking at the percentage of people who won a medal out of the total people who participated in the Olympics.
+
+SELECT team,
+(CAST(gold_medal_count AS float(3))/CAST(participation_count AS float(3)))*100 AS gold_percent,
+(CAST(silver_medal_count AS float(3))/CAST(participation_count AS float(3)))*100 AS silver_percent,
+(CAST(bronze_medal_count AS float(3))/CAST(participation_count AS float(3)))*100 AS bronze_percent,
+(CAST((gold_medal_count+silver_medal_count+bronze_medal_count) AS float(3))/CAST(participation_count AS float(3)))*100 AS win_percent
+FROM
+(SELECT team, COUNT(*) AS participation_count,
+SUM(CASE WHEN medal='Gold' THEN 1 ELSE 0 END) AS gold_medal_count,
+SUM(CASE WHEN medal='Silver' THEN 1 ELSE 0 END) AS silver_medal_count,
+SUM(CASE WHEN medal='Bronze' THEN 1 ELSE 0 END) AS bronze_medal_count
+FROM suriyaram38.athlete_events LEFT JOIN suriyaram38.noc_regions
+ON athlete_events.noc=noc_regions.noc 
+WHERE team='United States' OR team='France' OR team='Germany' OR team='Great Britain'
+GROUP BY team
+ORDER BY participation_count DESC) AS medal_count_table 
+--((gold_medal_count/participation_count)*100) AS gold_percentage,
+--((silver_medal_count/participation_count)*100) AS silver_percentage,
+--((bronze_medal_count/participation_count)*100) AS bronze_percentage
+LIMIT 100
+
+-- HYPOTHESIS 2- Studying the % medal contribution of the top 10 sports for each of the top 4 countries.
+
+SELECT (SUM(percent_contribution) OVER (ORDER BY percent_contribution DESC)) AS cumulative_percent, 
+sport, percent_contribution
+FROM
+(SELECT (CAST(total_table.medal_count AS float(3))/3858)*100 AS percent_contribution,
+sport 
+FROM
+(SELECT COUNT(*) AS medal_count, sport
+FROM suriyaram38.athlete_events
+LEFT JOIN suriyaram38.noc_regions ON athlete_events.noc=noc_regions.noc 
+WHERE team='United States' AND medal<>'NA'
+GROUP BY sport
+ORDER BY medal_count DESC
+LIMIT 10) AS total_table) AS tabletotal
+GROUP BY sport, percent_contribution
+ORDER BY percent_contribution DESC
+
+-- HYPOTHESIS 2- FRANCE
+
+SELECT (SUM(percent_contribution) OVER (ORDER BY percent_contribution DESC)) AS cumulative_percent, 
+sport, percent_contribution
+FROM
+(SELECT (CAST(total_table.medal_count AS float(3))/1061)*100 AS percent_contribution,
+sport 
+FROM
+(SELECT COUNT(*) AS medal_count, sport
+FROM suriyaram38.athlete_events
+LEFT JOIN suriyaram38.noc_regions ON athlete_events.noc=noc_regions.noc 
+WHERE team='France' AND medal<>'NA'
+GROUP BY sport
+ORDER BY medal_count DESC
+LIMIT 10) AS total_table) AS tabletotal
+GROUP BY sport, percent_contribution
+ORDER BY percent_contribution DESC
+LIMIT 100
+
+-- HYPOTHESIS 2- GERMANY
+
+SELECT (SUM(percent_contribution) OVER (ORDER BY percent_contribution DESC)) AS cumulative_percent, 
+sport, percent_contribution
+FROM
+(SELECT (CAST(total_table.medal_count AS float(3))/1346)*100 AS percent_contribution,
+sport 
+FROM
+(SELECT COUNT(*) AS medal_count, sport
+FROM suriyaram38.athlete_events
+LEFT JOIN suriyaram38.noc_regions ON athlete_events.noc=noc_regions.noc 
+WHERE team='Germany' AND medal<>'NA'
+GROUP BY sport
+ORDER BY medal_count DESC
+LIMIT 10) AS total_table) AS tabletotal
+GROUP BY sport, percent_contribution
+ORDER BY percent_contribution DESC
+
+
+-- HYPOTHESIS 2- GREAT BRITAIN
+
+SELECT (SUM(percent_contribution) OVER (ORDER BY percent_contribution DESC)) AS cumulative_percent, 
+sport, percent_contribution
+FROM
+(SELECT (CAST(total_table.medal_count AS float(3))/1304)*100 AS percent_contribution,
+sport 
+FROM
+(SELECT COUNT(*) AS medal_count, sport
+FROM suriyaram38.athlete_events
+LEFT JOIN suriyaram38.noc_regions ON athlete_events.noc=noc_regions.noc 
+WHERE team='Great Britain' AND medal<>'NA'
+GROUP BY sport
+ORDER BY medal_count DESC
+LIMIT 10) AS total_table) AS tabletotal
+GROUP BY sport, percent_contribution
+ORDER BY percent_contribution DESC
+
+-- HYPOTHESIS 2- % medal tally for top sports across all the top 4 countries
+
+SELECT COUNT(*) AS participation_count, sport
+FROM suriyaram38.athlete_events LEFT JOIN suriyaram38.noc_regions 
+ON athlete_events.noc=noc_regions.noc 
+WHERE team='United States' OR team='France' OR team='Germany' OR team='Great Britain'
+GROUP BY sport
+ORDER BY participation_count DESC
+LIMIT 100
+
+-- HYPOTHESIS 3- Whether people competing for a sport can win medals in multiple events
+
+SELECT sport, event, COUNT(*) AS medal_count
+FROM suriyaram38.athlete_events LEFT JOIN suriyaram38.noc_regions 
+ON athlete_events.noc=noc_regions.noc 
+WHERE sport='Athletics' AND
+(team='United States' OR team='France' OR team='Germany' OR team='Great Britain') AND medal<> 'NA'
+GROUP BY sport, event
+ORDER BY medal_count DESC
+
+-- REASON FOR THE PERIODIC SLUMP IN MEDAL WINNING TREND
+
+SELECT  season, COUNT(*) AS participation
+FROM suriyaram38.athlete_events LEFT JOIN suriyaram38.noc_regions 
+ON athlete_events.noc=noc_regions.noc
+WHERE team='United States' OR team='France' OR team='Germany' OR team='Great Britain'
+GROUP BY season
+ORDER BY participation DESC
+LIMIT 100
+
+-- COMPARISON IN THE TOP SPORTS ON A GENDER LEVEL AND WHETHER THEY ARE SIMILAR FOR MALE AND FEMALE
+
+SELECT sex, sport, COUNT(*) AS medal_count
+FROM suriyaram38.athlete_events LEFT JOIN suriyaram38.noc_regions 
+ON athlete_events.noc=noc_regions.noc
+WHERE (team='United States' OR team='France' OR team='Germany' OR team='Great Britain')
+AND medal<>'NA' AND sex='M'
+GROUP BY sex, sport
+ORDER BY medal_count DESC
+LIMIT 10
+
+-- MEDALS WON BY THE TOP 4 TEAMS IN THE WINTER SEASON OLYMPICS
+
+SELECT  year, team, COUNT(*) AS medal_count
+FROM suriyaram38.athlete_events LEFT JOIN suriyaram38.noc_regions 
+ON athlete_events.noc=noc_regions.noc
+WHERE (team='United States' OR team='France' OR team='Germany' OR team='Great Britain')
+AND medal<>'NA' AND season='Winter'
+GROUP BY year, team
+ORDER BY year ASC
+LIMIT 100
